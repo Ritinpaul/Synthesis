@@ -43,6 +43,10 @@ class RepoSnapshot:
 class IngestionResult:
     repo: Repository
     indexed_chunks: int
+    reused_chunks: int = 0
+    added_chunks: int = 0
+    deleted_chunks: int = 0
+    is_incremental: bool = False
 
 
 def ingest_repository(
@@ -52,6 +56,7 @@ def ingest_repository(
     branch: str,
     chunk_lines: int,
     max_file_size_bytes: int,
+    incremental: bool = True,
 ) -> IngestionResult:
     repo = db.execute(
         select(Repository).where(
@@ -74,25 +79,83 @@ def ingest_repository(
 
     snapshot = _materialize_repository(repo_url=repo_url, branch=branch)
     try:
-        db.execute(delete(CodeChunk).where(CodeChunk.repo_id == repo.repo_id))
-        chunks = list(_extract_chunks(snapshot.path, chunk_lines, max_file_size_bytes))
+        new_chunks = list(_extract_chunks(snapshot.path, chunk_lines, max_file_size_bytes))
 
-        for chunk in chunks:
-            db.add(
-                CodeChunk(
-                    repo_id=repo.repo_id,
-                    file_path=chunk.file_path,
-                    symbol_name=chunk.symbol_name,
-                    language=chunk.language,
-                    content_hash=chunk.content_hash,
-                    token_count=chunk.token_count,
-                    chunk_text=chunk.chunk_text,
-                    indexed_at=datetime.now(UTC).replace(tzinfo=None),
+        if not incremental:
+            # Full wipe and re-index
+            db.execute(delete(CodeChunk).where(CodeChunk.repo_id == repo.repo_id))
+            for chunk in new_chunks:
+                db.add(
+                    CodeChunk(
+                        repo_id=repo.repo_id,
+                        file_path=chunk.file_path,
+                        symbol_name=chunk.symbol_name,
+                        language=chunk.language,
+                        content_hash=chunk.content_hash,
+                        token_count=chunk.token_count,
+                        chunk_text=chunk.chunk_text,
+                        indexed_at=datetime.now(UTC).replace(tzinfo=None),
+                    )
                 )
+            db.flush()
+            return IngestionResult(
+                repo=repo,
+                indexed_chunks=len(new_chunks),
+                reused_chunks=0,
+                added_chunks=len(new_chunks),
+                deleted_chunks=0,
+                is_incremental=False,
             )
 
+        # Incremental Delta Indexing
+        existing_chunks = db.execute(
+            select(CodeChunk).where(CodeChunk.repo_id == repo.repo_id)
+        ).scalars().all()
+
+        existing_map = {(c.file_path, c.content_hash): c for c in existing_chunks}
+        seen_keys = set()
+
+        reused_count = 0
+        added_count = 0
+
+        for chunk in new_chunks:
+            key = (chunk.file_path, chunk.content_hash)
+            seen_keys.add(key)
+            if key in existing_map:
+                reused_count += 1
+            else:
+                db.add(
+                    CodeChunk(
+                        repo_id=repo.repo_id,
+                        file_path=chunk.file_path,
+                        symbol_name=chunk.symbol_name,
+                        language=chunk.language,
+                        content_hash=chunk.content_hash,
+                        token_count=chunk.token_count,
+                        chunk_text=chunk.chunk_text,
+                        indexed_at=datetime.now(UTC).replace(tzinfo=None),
+                    )
+                )
+                added_count += 1
+
+        # Remove stale chunks
+        deleted_count = 0
+        for (fpath, chash), old_chunk in existing_map.items():
+            if (fpath, chash) not in seen_keys:
+                db.delete(old_chunk)
+                deleted_count += 1
+
         db.flush()
-        return IngestionResult(repo=repo, indexed_chunks=len(chunks))
+        total_chunks = len(new_chunks)
+        return IngestionResult(
+            repo=repo,
+            indexed_chunks=total_chunks,
+            reused_chunks=reused_count,
+            added_chunks=added_count,
+            deleted_chunks=deleted_count,
+            is_incremental=True,
+        )
+
     finally:
         if snapshot.cleanup_path is not None:
             shutil.rmtree(snapshot.cleanup_path, ignore_errors=True)
@@ -173,6 +236,7 @@ def _extract_symbol_name(chunk_text: str) -> str:
         r"^\s*def\s+([a-zA-Z_][a-zA-Z0-9_]*)",
         r"^\s*class\s+([a-zA-Z_][a-zA-Z0-9_]*)",
         r"^\s*function\s+([a-zA-Z_][a-zA-Z0-9_]*)",
+        r"^\s*export\s+(?:default\s+)?(?:function|class|const|let)\s+([a-zA-Z_][a-zA-Z0-9_]*)",
     ]
     for pattern in patterns:
         match = re.search(pattern, chunk_text, re.MULTILINE)

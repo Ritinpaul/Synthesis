@@ -9,7 +9,7 @@ from app.auth import decode_access_token
 from app.db import SessionLocal, init_db
 from app.models import WorkspaceMembership
 
-SCOPED_PATH_PREFIXES = ("/repos", "/query")
+SCOPED_PATH_PREFIXES = ("/repos", "/query", "/pr")
 
 
 def create_app() -> FastAPI:
