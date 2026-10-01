@@ -66,7 +66,7 @@ export default function ArchitecturePage() {
         <div>
           <div className="flex items-center space-x-2">
             <AccountTreeOutlinedIcon sx={{ fontSize: 22, color: "#8B5CF6" }} />
-            <h1 className="text-xl font-bold text-white tracking-tight">System Architecture & Multi-Agent Specification</h1>
+            <h1 className="text-xl font-bold text-white tracking-tight">System Blueprint & Architecture Specification</h1>
           </div>
           <p className="text-xs text-slate-400 mt-1">
             End-to-end topology diagram, LangGraph StateGraph agent definitions, and mathematical precision models.

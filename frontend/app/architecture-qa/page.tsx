@@ -95,7 +95,7 @@ export default function ArchitectureQAPage() {
         <div>
           <div className="flex items-center space-x-2">
             <TerminalOutlinedIcon sx={{ fontSize: 22, color: "#10B981" }} />
-            <h1 className="text-xl font-bold text-white tracking-tight">Architecture Q&A Studio</h1>
+            <h1 className="text-xl font-bold text-white tracking-tight">Codebase Q&A Studio</h1>
           </div>
           <p className="text-xs text-slate-400 mt-1">
             Natural-language vector retrieval over indexed AST code chunks with LangGraph multi-agent synthesis.

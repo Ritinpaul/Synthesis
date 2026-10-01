@@ -206,7 +206,7 @@ export default function OverviewPage() {
                 <ChatBubbleOutlineOutlinedIcon sx={{ fontSize: 17 }} />
               </div>
               <div>
-                <div className="text-sm font-semibold text-slate-100">Architecture Q&A</div>
+                <div className="text-sm font-semibold text-slate-100">Codebase Q&A</div>
                 <div className="text-[10px] text-slate-500">RAG-powered codebase exploration</div>
               </div>
             </div>
@@ -389,7 +389,7 @@ export default function OverviewPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <AccountTreeOutlinedIcon sx={{ fontSize: 15, color: "#8B5CF6" }} />
-              <span className="text-xs font-semibold text-slate-200">Architecture</span>
+              <span className="text-xs font-semibold text-slate-200">System Blueprint</span>
             </div>
             <ChevronRightOutlinedIcon sx={{ fontSize: 14, color: "#475569" }} className="group-hover:translate-x-0.5 transition-transform" />
           </div>

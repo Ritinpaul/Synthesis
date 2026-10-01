@@ -25,11 +25,11 @@ type NavItem = {
 const navItems: NavItem[] = [
   { label: "Overview", href: "/", icon: <SpaceDashboardOutlinedIcon sx={{ fontSize: 18 }} /> },
   { label: "PR Risk Analyzer", href: "/pr-risk", icon: <GppMaybeOutlinedIcon sx={{ fontSize: 18 }} /> },
-  { label: "Architecture Q&A", href: "/architecture-qa", icon: <TerminalOutlinedIcon sx={{ fontSize: 18 }} /> },
+  { label: "Codebase Q&A", href: "/architecture-qa", icon: <TerminalOutlinedIcon sx={{ fontSize: 18 }} /> },
   { label: "Debt Heatmap", href: "/debt-heatmap", icon: <GridOnOutlinedIcon sx={{ fontSize: 18 }} /> },
   { label: "Repositories", href: "/repositories", icon: <FolderOpenOutlinedIcon sx={{ fontSize: 18 }} /> },
   { label: "Analytics", href: "/analytics", icon: <ShowChartOutlinedIcon sx={{ fontSize: 18 }} /> },
-  { label: "Architecture", href: "/architecture", icon: <AccountTreeOutlinedIcon sx={{ fontSize: 18 }} /> },
+  { label: "System Blueprint", href: "/architecture", icon: <AccountTreeOutlinedIcon sx={{ fontSize: 18 }} /> },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
