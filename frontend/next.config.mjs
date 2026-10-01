@@ -11,7 +11,6 @@ const nextConfig = {
         source: '/workspaces',
         destination: 'http://127.0.0.1:8001/workspaces',
       },
-
       {
         source: '/query/:path*',
         destination: 'http://127.0.0.1:8001/query/:path*',
