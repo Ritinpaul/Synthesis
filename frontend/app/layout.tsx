@@ -1,16 +1,19 @@
 import "./globals.css";
 import type { ReactNode } from "react";
+import { AppShell } from "@/components/AppShell";
 
 export const metadata = {
-  title: "Synthesis - Codebase Intelligence Platform",
-  description: "Autonomous Codebase Intelligence, Architecture Q&A, and PR Copilot",
+  title: "Synthesis - AI Codebase Intelligence & PR Risk Platform",
+  description: "Autonomous Codebase Intelligence, Breaking Change Detection, and Multi-Agent Architecture Q&A",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="dark">
-      <body className="bg-zinc-950 text-zinc-200 antialiased font-sans flex h-screen overflow-hidden">
-        {children}
+      <body className="bg-[#060A0A] text-slate-100 antialiased font-sans flex h-screen overflow-hidden">
+        <AppShell>
+          {children}
+        </AppShell>
       </body>
     </html>
   );
