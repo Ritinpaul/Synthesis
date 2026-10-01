@@ -7,9 +7,13 @@ ulimit -n 65535 2>/dev/null || true
 echo "=== Starting Synthesis Service ==="
 echo "Platform PORT = ${PORT:-not set}"
 
-# Configure Supabase PostgreSQL
-export SYNTHESIS_DATABASE_URL="${SYNTHESIS_DATABASE_URL:-postgresql+psycopg://user:REDACTED@host:5432/dbname}"
-echo "SYNTHESIS_DATABASE_URL configured for Supabase PostgreSQL."
+# Handle Postgres DATABASE_URL if provisioned by platform
+if [ -n "$DATABASE_URL" ]; then
+    echo "Configuring DATABASE_URL for Postgres..."
+    CLEAN_URL=$(echo "$DATABASE_URL" | sed 's|^postgres://|postgresql+psycopg://|' | sed 's|^postgresql://|postgresql+psycopg://|')
+    export SYNTHESIS_DATABASE_URL="$CLEAN_URL"
+    echo "SYNTHESIS_DATABASE_URL configured."
+fi
 
 echo "Starting FastAPI backend on 127.0.0.1:8001..."
 cd /app
@@ -21,7 +25,7 @@ echo "Waiting for backend to be ready on port 8001..."
 MAX_WAIT=30
 i=0
 while [ $i -lt $MAX_WAIT ]; do
-    if python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health/ready')" 2>/dev/null; then
+    if python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health')" 2>/dev/null; then
         echo "Backend is ready!"
         break
     fi
