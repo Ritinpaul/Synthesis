@@ -1,3 +1,4 @@
+import os
 from functools import lru_cache
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -12,7 +13,7 @@ class Settings(BaseSettings):
 
     app_name: str = "Synthesis API"
     environment: str = "development"
-    database_url: str = "sqlite:///./synthesis.db"
+    database_url: str = os.getenv("SYNTHESIS_DATABASE_URL") or os.getenv("DATABASE_URL") or "sqlite:///./synthesis.db"
     jwt_secret: str = "change-me-in-production-with-at-least-32-characters"
     jwt_algorithm: str = "HS256"
     token_expiry_minutes: int = 120

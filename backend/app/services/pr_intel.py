@@ -262,6 +262,8 @@ def _generate_summary_md(
 ) -> str:
     files_str = ", ".join(changed_files[:5]) if changed_files else "None"
     symbols_str = ", ".join(all_changed_symbols[:5]) if all_changed_symbols else "global"
+    debt_markers_str = "".join(f"- {m}\n" for m in debt_markers)
+    recommendation = "Requires senior engineering review before merge due to potential API breaking changes." if breaking_score >= 50 else "Safe to merge after standard automated test validation."
 
     return f"""### Synthesis PR Risk & Debt Summary — PR #{pr_number}
 
@@ -281,10 +283,10 @@ def _generate_summary_md(
 - **Exported Symbols Changed:** `{symbols_str}`
 
 #### ⚠️ Technical Debt & Quality Signals
-{"".join(f"- {m}\n" for m in debt_markers)}
+{debt_markers_str}
 
 #### 🤖 AI Recommendation
-{"Requires senior engineering review before merge due to potential API breaking changes." if breaking_score >= 50 else "Safe to merge after standard automated test validation."}
+{recommendation}
 """
 
 
