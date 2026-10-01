@@ -58,7 +58,7 @@ export default function ArchitectureQAPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8000/query/architecture", {
+      const res = await fetch("/query/architecture", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

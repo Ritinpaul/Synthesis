@@ -42,11 +42,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {/* Brand / Logo */}
         <div className="h-16 flex items-center justify-between px-5 border-b border-[#132220]">
           <Link href="/" className="flex items-center space-x-2.5 group">
-            <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-base shadow-sm group-hover:border-emerald-400 transition-colors">
-              <svg width={16} height={16} style={{ width: 16, height: 16 }} className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
+            <img
+              src="/logo-icon.png"
+              alt="Synthesis Logo"
+              width={28}
+              height={28}
+              className="w-7 h-7 object-contain drop-shadow-[0_0_8px_rgba(16,185,129,0.4)] group-hover:scale-105 transition-transform"
+            />
             <span className="font-semibold text-base tracking-tight text-white group-hover:text-emerald-300 transition-colors">
               Synthesis
             </span>

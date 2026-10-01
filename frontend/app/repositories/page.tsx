@@ -82,7 +82,7 @@ export default function RepositoriesPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/repos/index", {
+      const res = await fetch("/repos/index", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

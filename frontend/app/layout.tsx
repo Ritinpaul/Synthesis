@@ -10,7 +10,11 @@ export const metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="dark">
-      <body className="bg-[#060A0A] text-slate-100 antialiased font-sans flex h-screen overflow-hidden">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      </head>
+      <body className="bg-[#060A0A] text-slate-100 antialiased flex h-screen overflow-hidden">
         <AppShell>
           {children}
         </AppShell>
