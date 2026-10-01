@@ -15,6 +15,11 @@ import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNone
 import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDownOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import ChevronLeftOutlinedIcon from "@mui/icons-material/ChevronLeftOutlined";
+import CheckOutlinedIcon from "@mui/icons-material/CheckOutlined";
+import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
+
+import { useAuth } from "@/lib/auth-context";
+import { AuthModals } from "@/components/AuthModals";
 
 type NavItem = {
   label: string;
@@ -34,6 +39,21 @@ const navItems: NavItem[] = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const {
+    user,
+    workspaces,
+    currentWorkspace,
+    setCurrentWorkspace,
+    setIsAuthModalOpen,
+    setIsWsModalOpen,
+  } = useAuth();
+
+  const [isWsDropdownOpen, setIsWsDropdownOpen] = useState(false);
+
+  const userInitials = user?.name ? user.name.slice(0, 2).toUpperCase() : "RP";
+  const userName = user?.name || "Ritin Pal";
+  const userRole = user?.role || "Owner";
+  const wsName = currentWorkspace?.name || "Synthesis Core";
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[#060A0A] text-slate-100 font-sans">
@@ -82,31 +102,89 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Bottom Workspace & User Profile */}
-        <div className="p-3 border-t border-[#132220] space-y-2.5 bg-[#070D0C]">
-          {/* Workspace Pill */}
-          <div className="bg-[#0D1816] border border-[#142623] rounded-lg p-2.5 flex items-center justify-between text-xs">
-            <div>
-              <div className="text-[9px] text-slate-500 uppercase tracking-wider font-semibold">Workspace</div>
-              <div className="font-semibold text-slate-200">astral-core</div>
-              <div className="text-[10px] text-slate-400 font-mono">uv-runtime</div>
-            </div>
-            <KeyboardArrowDownOutlinedIcon sx={{ fontSize: 16, color: "#64748B" }} />
+        <div className="p-3 border-t border-[#132220] space-y-2.5 bg-[#070D0C] relative">
+          {/* Workspace Switcher Pill */}
+          <div className="relative">
+            <button
+              onClick={() => setIsWsDropdownOpen(!isWsDropdownOpen)}
+              className="w-full bg-[#0D1816] hover:bg-[#12221F] border border-[#142623] hover:border-emerald-500/30 rounded-lg p-2.5 flex items-center justify-between text-xs transition-colors text-left"
+            >
+              <div>
+                <div className="text-[9px] text-slate-500 uppercase tracking-wider font-semibold">Workspace</div>
+                <div className="font-semibold text-slate-200 truncate max-w-[140px]">{wsName}</div>
+                <div className="text-[10px] text-emerald-400/80 font-mono">Supabase DB • live</div>
+              </div>
+              <KeyboardArrowDownOutlinedIcon
+                sx={{ fontSize: 16, color: "#64748B" }}
+                className={`transition-transform duration-200 ${isWsDropdownOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {/* Workspace Dropdown */}
+            {isWsDropdownOpen && (
+              <div className="absolute bottom-full left-0 mb-2 w-full bg-[#0A1211] border border-[#142321] rounded-xl shadow-2xl p-1.5 space-y-1 z-50">
+                <div className="px-2.5 py-1 text-[10px] text-slate-500 font-semibold uppercase tracking-wider">
+                  Switch Workspace
+                </div>
+                {workspaces.map((ws) => {
+                  const isCurrent = currentWorkspace?.workspace_id === ws.workspace_id;
+                  return (
+                    <button
+                      key={ws.workspace_id}
+                      onClick={() => {
+                        setCurrentWorkspace(ws);
+                        setIsWsDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs transition-colors text-left ${
+                        isCurrent
+                          ? "bg-emerald-500/15 text-emerald-300 font-semibold"
+                          : "text-slate-300 hover:bg-[#0F1B19] hover:text-white"
+                      }`}
+                    >
+                      <span className="truncate">{ws.name}</span>
+                      {isCurrent && <CheckOutlinedIcon sx={{ fontSize: 14, color: "#10B981" }} />}
+                    </button>
+                  );
+                })}
+                <div className="pt-1 border-t border-[#142321]">
+                  <button
+                    onClick={() => {
+                      setIsWsDropdownOpen(false);
+                      setIsWsModalOpen(true);
+                    }}
+                    className="w-full flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-[11px] text-emerald-400 hover:bg-emerald-500/10 font-semibold transition-colors"
+                  >
+                    <AddOutlinedIcon sx={{ fontSize: 14 }} />
+                    <span>Create Workspace</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* User Profile */}
-          <div className="flex items-center justify-between px-1 py-1">
+          {/* User Profile Pill */}
+          <div
+            onClick={() => setIsAuthModalOpen(true)}
+            className="flex items-center justify-between px-1 py-1 rounded-lg hover:bg-[#0F1B19] cursor-pointer transition-colors group"
+          >
             <div className="flex items-center space-x-2.5">
-              <div className="w-7 h-7 rounded-full bg-emerald-950 border border-emerald-500/50 text-emerald-300 text-xs font-bold flex items-center justify-center shadow-sm">
-                RP
+              <div className="w-7 h-7 rounded-full bg-emerald-950 border border-emerald-500/50 text-emerald-300 text-xs font-bold flex items-center justify-center shadow-sm group-hover:border-emerald-400 transition-colors">
+                {userInitials}
               </div>
               <div className="text-left">
-                <div className="text-xs font-semibold text-slate-200 leading-tight">Ritin Pal</div>
-                <div className="text-[10px] text-slate-400">Developer</div>
+                <div className="text-xs font-semibold text-slate-200 group-hover:text-emerald-300 transition-colors leading-tight">
+                  {userName}
+                </div>
+                <div className="text-[10px] text-slate-400">{userRole}</div>
               </div>
             </div>
             <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsAuthModalOpen(true);
+              }}
               className="text-slate-500 hover:text-slate-300 transition-colors p-1"
-              title="Settings"
+              title="User Account & Security"
             >
               <SettingsOutlinedIcon sx={{ fontSize: 16 }} />
             </button>
@@ -137,15 +215,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {/* Right Header Status & Badges */}
           <div className="flex items-center space-x-3.5">
             <button
-              className="text-slate-400 hover:text-slate-200 p-1.5 rounded-lg border border-[#142623] bg-[#0D1816] hover:bg-[#12221F] transition-colors"
+              onClick={() => setIsAuthModalOpen(true)}
+              className="relative text-slate-400 hover:text-slate-200 p-1.5 rounded-lg border border-[#142623] bg-[#0D1816] hover:bg-[#12221F] transition-colors"
               title="Notifications"
             >
               <NotificationsNoneOutlinedIcon sx={{ fontSize: 18 }} />
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-slate-950 font-bold text-[9px] rounded-full flex items-center justify-center ring-2 ring-[#090F0E]">
+                2
+              </span>
             </button>
 
-            <div className="w-8 h-8 rounded-full bg-emerald-950 border border-emerald-500/50 text-emerald-300 text-xs font-bold flex items-center justify-center shadow-sm">
-              RP
-            </div>
+            {/* Profile Avatar Pill */}
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
+              className="flex items-center space-x-2 pl-1 pr-2.5 py-1 rounded-full border border-[#142623] bg-[#0D1816] hover:bg-[#12221F] transition-colors group"
+            >
+              <div className="w-6 h-6 rounded-full bg-emerald-900 border border-emerald-500/40 text-emerald-300 text-[11px] font-bold flex items-center justify-center">
+                {userInitials}
+              </div>
+              <span className="text-xs text-slate-300 font-medium group-hover:text-emerald-300 transition-colors">
+                {userName.split(" ")[0]}
+              </span>
+            </button>
           </div>
         </header>
 
@@ -154,6 +245,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+
+      {/* Global Modals (Auth, Profile, Workspace) */}
+      <AuthModals />
     </div>
   );
 }

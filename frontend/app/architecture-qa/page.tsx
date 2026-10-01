@@ -6,15 +6,21 @@ import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import CodeOutlinedIcon from "@mui/icons-material/CodeOutlined";
 import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
 import ArrowForwardOutlinedIcon from "@mui/icons-material/ArrowForwardOutlined";
+import AutorenewOutlinedIcon from "@mui/icons-material/AutorenewOutlined";
+
+import { useAuth } from "@/lib/auth-context";
 import type { ArchitectureQueryResponse } from "@/lib/types";
 
 export default function ArchitectureQAPage() {
+  const { currentWorkspace, token } = useAuth();
   const [question, setQuestion] = useState("Which modules handle workspace authorization and JWT token scoping?");
   const [loading, setLoading] = useState(false);
 
+  const wsId = currentWorkspace?.workspace_id || 1;
+
   const [result, setResult] = useState<ArchitectureQueryResponse>({
     answer:
-      "### Architecture Query Analysis\n**Question:** Which modules handle workspace authorization and JWT token scoping?\n**Detected Intent:** `security_architecture_query`\n\n- **Primary Security Modules:** `backend/app/auth.py`, `backend/app/main.py`, `backend/app/dependencies.py`\n- **Key Exported Symbols:** `create_access_token`, `decode_access_token`, `workspace_scope_middleware`, `require_workspace_access`\n- **Token Scoping Logic:** Every authenticated API request inspects the `X-Workspace-Id` header against `WorkspaceMembership` table via dependency injection.\n\n#### Recommendation\nAll tenant operations are guarded by `require_workspace_access` in FastAPI dependencies, ensuring zero cross-tenant leakage.",
+      "### Architecture Query Analysis\n**Question:** Which modules handle workspace authorization and JWT token scoping?\n**Detected Intent:** `security_architecture_query`\n\n- **Primary Security Modules:** `backend/app/auth.py`, `backend/app/main.py`, `backend/app/dependencies.py`\n- **Key Exported Symbols:** `create_access_token`, `decode_access_token`, `workspace_scope_middleware`, `require_workspace_access`\n- **Token Scoping Logic:** Every authenticated API request inspects the `X-Workspace-Id` header against `WorkspaceMembership` table in Supabase via dependency injection.\n\n#### Recommendation\nAll tenant operations are guarded by `require_workspace_access` in FastAPI dependencies, ensuring zero cross-tenant leakage.",
     citations: [
       {
         repo_id: 1,
@@ -54,7 +60,7 @@ export default function ArchitectureQAPage() {
 
   const handleQuery = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!question.trim()) return;
+    if (!question.trim() || !token) return;
     setLoading(true);
 
     try {
@@ -62,11 +68,11 @@ export default function ArchitectureQAPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer syn_live_9f82c0a4e7",
-          "X-Workspace-Id": "1",
+          Authorization: `Bearer ${token}`,
+          "X-Workspace-Id": String(wsId),
         },
         body: JSON.stringify({
-          workspace_id: 1,
+          workspace_id: wsId,
           question,
         }),
       });
@@ -113,50 +119,58 @@ export default function ArchitectureQAPage() {
       </div>
 
       {/* Query Search Form */}
-      <form onSubmit={handleQuery} className="space-y-3">
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
+      <div className="rounded-xl border border-[#142321] bg-[#0A1211] p-5 space-y-4">
+        <form onSubmit={handleQuery} className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
             <SearchOutlinedIcon sx={{ fontSize: 20 }} />
           </div>
           <input
             type="text"
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
-            placeholder="Ask anything about repository architecture, auth pipelines, or service interactions..."
-            className="w-full bg-[#0A1211] border border-[#142321] rounded-xl pl-11 pr-32 py-3.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors shadow-sm"
+            placeholder="Ask an architectural question about your indexed codebase..."
+            className="w-full bg-[#060A0A] border border-[#142321] rounded-xl pl-11 pr-28 py-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/50"
           />
           <button
             type="submit"
             disabled={loading}
-            className="absolute inset-y-2 right-2 px-4 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-[#060A0A] font-semibold text-xs transition-all flex items-center space-x-1.5"
+            className="absolute inset-y-1.5 right-1.5 px-4 rounded-lg bg-emerald-500 text-slate-950 font-bold text-xs hover:bg-emerald-400 transition-colors flex items-center space-x-1.5 shadow-md shadow-emerald-500/20 disabled:opacity-50"
           >
-            <span>{loading ? "Searching..." : "Ask Agent"}</span>
-            <ArrowForwardOutlinedIcon sx={{ fontSize: 14 }} />
+            {loading ? (
+              <>
+                <AutorenewOutlinedIcon sx={{ fontSize: 14 }} className="animate-spin" />
+                <span>Thinking...</span>
+              </>
+            ) : (
+              <>
+                <span>Ask Agent</span>
+                <ArrowForwardOutlinedIcon sx={{ fontSize: 14 }} />
+              </>
+            )}
           </button>
-        </div>
+        </form>
 
-        {/* Suggestion Chips */}
+        {/* Suggestions */}
         <div className="flex flex-wrap items-center gap-2 pt-1">
-          <span className="text-[10px] uppercase font-semibold text-slate-500">Suggestions:</span>
+          <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Suggestions:</span>
           {suggestions.map((s, idx) => (
             <button
               key={idx}
-              type="button"
               onClick={() => setQuestion(s)}
-              className="text-[11px] px-2.5 py-1 rounded-md bg-[#101B1A] hover:bg-[#152422] border border-[#142321] text-slate-300 transition-colors text-left"
+              className="text-[11px] px-2.5 py-1 rounded-md bg-[#060A0A] border border-[#142321] text-slate-400 hover:text-emerald-300 hover:border-emerald-500/30 transition-colors"
             >
               {s}
             </button>
           ))}
         </div>
-      </form>
+      </div>
 
-      {/* Main Grid: Response + Citations */}
+      {/* Results View */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: AI Answer & LangGraph Trace */}
+        {/* Left: Synthesized Answer & Execution Trace */}
         <div className="lg:col-span-7 space-y-4">
           <div className="rounded-xl border border-[#142321] bg-[#0A1211] p-5 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-[#142321]">
+            <div className="flex items-center justify-between pb-2 border-b border-[#142321]">
               <span className="text-xs font-semibold text-slate-200 uppercase tracking-wider">
                 Synthesized Architecture Response
               </span>
@@ -165,56 +179,61 @@ export default function ArchitectureQAPage() {
               </span>
             </div>
 
-            <div className="prose prose-invert max-w-none text-xs text-slate-300 leading-relaxed whitespace-pre-line font-sans">
+            <div className="prose prose-invert prose-xs max-w-none text-slate-300 leading-relaxed font-sans whitespace-pre-line">
               {result.answer}
             </div>
           </div>
 
-          {/* LangGraph Trace Stepper */}
+          {/* LangGraph Trace */}
           <div className="rounded-xl border border-[#142321] bg-[#0A1211] p-5 space-y-3">
             <div className="text-xs font-semibold text-slate-200 uppercase tracking-wider">
               LangGraph Execution Trace
             </div>
             <div className="space-y-2">
               {result.trace.map((t, idx) => (
-                <div key={idx} className="p-3 rounded-lg bg-[#060A0A] border border-[#142321] text-xs font-mono">
-                  <div className="flex items-center justify-between text-emerald-400 font-semibold mb-1">
-                    <span>Node {idx + 1}: {t.agent}</span>
-                    <span className="text-[10px] text-emerald-300 uppercase">{t.status}</span>
+                <div
+                  key={idx}
+                  className="p-2.5 rounded-lg bg-[#060A0A] border border-[#142321] flex items-center justify-between text-xs"
+                >
+                  <div className="flex items-center space-x-2">
+                    <CheckCircleOutlineOutlinedIcon sx={{ fontSize: 15, color: "#10B981" }} />
+                    <span className="font-semibold text-white">{t.agent}</span>
                   </div>
-                  <div className="text-slate-400 text-[11px]">{t.detail}</div>
+                  <span className="font-mono text-[10px] text-slate-400 truncate max-w-[280px]">
+                    {t.detail}
+                  </span>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Right Column: High-Confidence Code Citations */}
+        {/* Right: Citations */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="rounded-xl border border-[#142321] bg-[#0A1211] p-5 space-y-4">
+          <div className="rounded-xl border border-[#142321] bg-[#0A1211] p-5 space-y-3">
             <div className="flex items-center justify-between pb-2 border-b border-[#142321]">
-              <div className="flex items-center space-x-2 text-xs font-semibold text-slate-200">
-                <CodeOutlinedIcon sx={{ fontSize: 18, color: "#10B981" }} />
+              <div className="flex items-center space-x-1.5 text-xs font-semibold text-slate-200">
+                <CodeOutlinedIcon sx={{ fontSize: 16, color: "#10B981" }} />
                 <span>Source Code Citations</span>
               </div>
-              <span className="text-[10px] font-mono text-slate-400">
-                FAISS Top-K
-              </span>
+              <span className="text-[10px] font-mono text-slate-400">FAISS Top-K</span>
             </div>
 
             <div className="space-y-3">
               {result.citations.map((c, idx) => (
-                <div key={idx} className="rounded-lg border border-[#142321] bg-[#060A0A] p-3 space-y-2 font-mono text-xs">
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-emerald-400 font-semibold">{c.file_path}</span>
-                    <span className="text-[10px] text-slate-400 bg-[#101B1A] px-2 py-0.5 rounded border border-[#142321]">
+                <div key={idx} className="rounded-lg border border-[#142321] bg-[#060A0A] p-3 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-mono text-emerald-400 font-bold">{c.file_path}</span>
+                    <span className="text-[10px] font-mono text-slate-400">
                       Score: {(c.confidence_score * 100).toFixed(0)}%
                     </span>
                   </div>
+
                   <div className="text-[11px] text-slate-400">
-                    Symbol: <span className="text-teal-300">{c.symbol_name}</span>
+                    Symbol: <code className="text-slate-300 font-mono">{c.symbol_name}</code>
                   </div>
-                  <pre className="text-[10px] text-slate-300 bg-[#101B1A] p-2.5 rounded border border-[#142321] overflow-x-auto whitespace-pre">
+
+                  <pre className="p-2.5 rounded bg-[#0A1211] border border-[#142321] font-mono text-[10.5px] text-slate-300 overflow-x-auto whitespace-pre-wrap leading-relaxed">
                     {c.snippet}
                   </pre>
                 </div>

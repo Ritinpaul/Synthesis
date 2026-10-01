@@ -4,6 +4,18 @@ from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+def get_default_db_url() -> str:
+    env_url = os.getenv("SYNTHESIS_DATABASE_URL") or os.getenv("DATABASE_URL")
+    if env_url:
+        # Standardize prefix for psycopg3
+        if env_url.startswith("postgres://"):
+            env_url = env_url.replace("postgres://", "postgresql+psycopg://", 1)
+        elif env_url.startswith("postgresql://") and not env_url.startswith("postgresql+psycopg://"):
+            env_url = env_url.replace("postgresql://", "postgresql+psycopg://", 1)
+        return env_url
+    return "postgresql+psycopg://user:REDACTED@host:5432/dbname"
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -13,10 +25,10 @@ class Settings(BaseSettings):
 
     app_name: str = "Synthesis API"
     environment: str = "development"
-    database_url: str = os.getenv("SYNTHESIS_DATABASE_URL") or os.getenv("DATABASE_URL") or "sqlite:///./synthesis.db"
-    jwt_secret: str = "change-me-in-production-with-at-least-32-characters"
+    database_url: str = get_default_db_url()
+    jwt_secret: str = "REDACTED_JWT_SECRET"
     jwt_algorithm: str = "HS256"
-    token_expiry_minutes: int = 120
+    token_expiry_minutes: int = 43200  # 30 days
     index_dir: str = "./data/indexes"
     max_file_size_bytes: int = 2_000_000
     chunk_lines: int = 80

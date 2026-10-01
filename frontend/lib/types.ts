@@ -4,12 +4,46 @@ export type Workspace = {
   created_at: string;
 };
 
+export type UserProfile = {
+  user_id: number;
+  email: string;
+  name: string;
+  role: string;
+  workspaces: Workspace[];
+  active_workspace_id: number;
+};
+
 export type Repository = {
   repo_id: number;
   workspace_id: number;
   url: string;
   default_branch: string;
   last_indexed_at?: string;
+};
+
+export type RepositoryDetail = {
+  repo_id: number;
+  workspace_id: number;
+  name: string;
+  url: string;
+  branch: string;
+  provider: string;
+  chunks: number;
+  loc: number;
+  reused_chunks: number;
+  last_indexed: string;
+  status: "synced" | "indexing" | "pending";
+};
+
+export type PRListItem = {
+  pr_id: number;
+  pr_number: number;
+  title: string;
+  author: string;
+  breaking_change_score: number;
+  debt_score: number;
+  risk_level: "low" | "medium" | "high" | "critical";
+  created_at: string;
 };
 
 export type Citation = {
@@ -43,6 +77,22 @@ export type PRAnalyzeResponse = {
   impacted_files: string[];
   debt_markers: string[];
   generated_at: string;
+};
+
+export type DebtHeatmapItem = {
+  file_path: string;
+  symbol_name: string;
+  loc: number;
+  risk_score: number;
+  status: "critical" | "warning" | "stable";
+};
+
+export type DebtHeatmapResponse = {
+  workspace_id: number;
+  total_files: number;
+  avg_debt_score: number;
+  critical_modules_count: number;
+  modules: DebtHeatmapItem[];
 };
 
 export type WorkspaceAnalyticsResponse = {

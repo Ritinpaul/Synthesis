@@ -146,13 +146,13 @@ export default function OverviewPage() {
           {/* PR Meta row */}
           <div className="flex items-center justify-between bg-[#060A0A] border border-[#142623] rounded-xl px-4 py-3">
             <div>
-              <div className="text-[11px] text-slate-400 font-mono">#842</div>
+              <div className="text-[11px] text-slate-400 font-mono">#42</div>
               <div className="text-xs text-slate-200 font-medium mt-0.5 truncate max-w-[260px]">
-                Add streaming cache layer to async gateway
+                feat(auth): enforce JWT workspace scoping and AST visitor cache
               </div>
             </div>
             <span className="flex-shrink-0 px-2.5 py-1 rounded-lg bg-rose-500/12 border border-rose-500/25 text-rose-400 font-bold text-[10px] font-mono">
-              85/100 HIGH
+              84.5/100 CRITICAL
             </span>
           </div>
 
@@ -162,10 +162,10 @@ export default function OverviewPage() {
               src/payments/core.py • @@ -49,7 +49,8 @@
             </div>
             <div className="text-rose-400 bg-rose-500/8 px-2 py-0.5 rounded">
-              <span className="text-slate-600 mr-2 select-none">49</span>- const cacheTimeout = 3600;
+              <span className="text-slate-600 mr-2 select-none">49</span>- def require_workspace_access(request: Request) -&gt; int:
             </div>
             <div className="text-emerald-400 bg-emerald-500/8 px-2 py-0.5 rounded">
-              <span className="text-slate-600 mr-2 select-none">50</span>+ const cacheTimeout = 7200;
+              <span className="text-slate-600 mr-2 select-none">50</span>+ async def require_workspace_access(request: Request, db: Session = Depends(get_db_session)) -&gt; int:
             </div>
             <div className="text-slate-400 px-2 py-0.5">
               <span className="text-slate-600 mr-2 select-none">51</span>const getCachedData = async () =&gt; &#123;
@@ -330,10 +330,10 @@ export default function OverviewPage() {
           {/* Repo list */}
           <div className="space-y-2.5 flex-1">
             {[
-              { name: "astral-core", loc: "50,000", active: true },
-              { name: "web-client", loc: "12,300", active: false },
-              { name: "ml-agents", loc: "8,900", active: false },
-              { name: "infra", loc: "4,200", active: false },
+              { name: "Synthesis", loc: "14,800", active: true },
+              { name: "uv", loc: "50,000", active: false },
+              { name: "langgraph", loc: "8,900", active: false },
+              { name: "fastapi", loc: "32,400", active: false },
             ].map(r => (
               <div key={r.name} className="flex items-center justify-between py-1 border-b border-[#0F1C1A] last:border-0">
                 <div className="flex items-center gap-2">

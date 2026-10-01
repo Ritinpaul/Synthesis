@@ -128,3 +128,58 @@ class HealthReadyResponse(BaseModel):
     db: str
     index_worker: str
     status: str
+
+class UserProfileResponse(BaseModel):
+    user_id: int
+    email: str
+    name: str
+    role: str
+    workspaces: list[WorkspaceResponse]
+    active_workspace_id: int
+
+
+class RepositoryDetailResponse(BaseModel):
+    repo_id: int
+    workspace_id: int
+    name: str
+    url: str
+    branch: str
+    provider: str
+    chunks: int
+    loc: int
+    reused_chunks: int
+    last_indexed: str
+    status: str
+
+
+class AddRepositoryRequest(BaseModel):
+    url: str
+    branch: str = "main"
+    provider: str = "github"
+
+
+class PRListItemResponse(BaseModel):
+    pr_id: int
+    pr_number: int
+    title: str = ""
+    author: str
+    breaking_change_score: float
+    debt_score: float
+    risk_level: str
+    created_at: str
+
+
+class DebtHeatmapItem(BaseModel):
+    file_path: str
+    symbol_name: str
+    loc: int
+    risk_score: float
+    status: str
+
+
+class DebtHeatmapResponse(BaseModel):
+    workspace_id: int
+    total_files: int
+    avg_debt_score: float
+    critical_modules_count: int
+    modules: list[DebtHeatmapItem]

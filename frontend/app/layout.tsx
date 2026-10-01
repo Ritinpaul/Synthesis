@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { ReactNode } from "react";
 import { AppShell } from "@/components/AppShell";
+import { AuthProvider } from "@/lib/auth-context";
 
 export const metadata = {
   title: "Synthesis - AI Codebase Intelligence & PR Risk Platform",
@@ -15,9 +16,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className="bg-[#060A0A] text-slate-100 antialiased flex h-screen overflow-hidden">
-        <AppShell>
-          {children}
-        </AppShell>
+        <AuthProvider>
+          <AppShell>
+            {children}
+          </AppShell>
+        </AuthProvider>
       </body>
     </html>
   );
