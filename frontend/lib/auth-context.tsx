@@ -22,23 +22,11 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const DEFAULT_USER: UserProfile = {
-  user_id: 1,
-  email: "ritin@synthesis.dev",
-  name: "Ritin Pal",
-  role: "Owner",
-  workspaces: [
-    { workspace_id: 1, name: "Synthesis Core", created_at: new Date().toISOString() },
-    { workspace_id: 2, name: "Astral Runtime", created_at: new Date().toISOString() },
-  ],
-  active_workspace_id: 1,
-};
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
-  const [user, setUser] = useState<UserProfile | null>(DEFAULT_USER);
-  const [workspaces, setWorkspaces] = useState<Workspace[]>(DEFAULT_USER.workspaces);
-  const [currentWorkspace, setCurrentWorkspaceState] = useState<Workspace | null>(DEFAULT_USER.workspaces[0]);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [currentWorkspace, setCurrentWorkspaceState] = useState<Workspace | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isWsModalOpen, setIsWsModalOpen] = useState(false);
@@ -77,33 +65,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return false;
   }, []);
 
-  // Initial auth load on mount
+  // Initial auth load on mount: check stored session, or prompt for Sign In / Demo on startup
   useEffect(() => {
     const initAuth = async () => {
       try {
-        let storedToken = localStorage.getItem("synthesis_token");
-
-        if (!storedToken) {
-          // Attempt login with default seed user credentials
-          try {
-            const tokenRes = await fetch("/auth/token", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email: "ritin@synthesis.dev", password: "synthesis123" }),
-            });
-            if (tokenRes.ok) {
-              const tokenData = await tokenRes.json();
-              storedToken = tokenData.access_token;
-              if (storedToken) {
-                localStorage.setItem("synthesis_token", storedToken);
-              }
-            }
-          } catch {}
-        }
+        const storedToken = localStorage.getItem("synthesis_token");
 
         if (storedToken) {
           setToken(storedToken);
-          await fetchProfile(storedToken);
+          const ok = await fetchProfile(storedToken);
+          if (!ok) {
+            // Token expired or invalid
+            localStorage.removeItem("synthesis_token");
+            setToken(null);
+            setUser(null);
+            setIsAuthModalOpen(true);
+          }
+        } else {
+          // On startup with no session, open Sign In / Demo modal immediately
+          setIsAuthModalOpen(true);
         }
       } finally {
         setIsLoading(false);
@@ -163,10 +143,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("synthesis_token");
     localStorage.removeItem("synthesis_active_ws_id");
     setToken(null);
-    setUser(DEFAULT_USER);
-    setWorkspaces(DEFAULT_USER.workspaces);
-    setCurrentWorkspaceState(DEFAULT_USER.workspaces[0]);
-    setIsAuthModalOpen(false);
+    setUser(null);
+    setWorkspaces([]);
+    setCurrentWorkspaceState(null);
+    setIsAuthModalOpen(true);
   };
 
   const createWorkspace = async (name: string): Promise<Workspace | null> => {
