@@ -21,3 +21,5 @@ frontend/.next/
 # OS
 .DS_Store
 Thumbs.db
+
+DESIGN.md
