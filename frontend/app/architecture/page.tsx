@@ -1,10 +1,15 @@
 "use client";
 
 import React from "react";
+import dynamic from "next/dynamic";
 import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
 import FunctionsOutlinedIcon from "@mui/icons-material/FunctionsOutlined";
 import ApiOutlinedIcon from "@mui/icons-material/ApiOutlined";
-import { SynthesisMermaid } from "@/components/SynthesisMermaid";
+
+const SynthesisMermaid = dynamic(
+  () => import("@/components/SynthesisMermaid").then((m) => m.SynthesisMermaid),
+  { ssr: false }
+);
 
 const mermaidChart = `
 graph TD
