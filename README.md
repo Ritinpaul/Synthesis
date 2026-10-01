@@ -86,30 +86,51 @@ Built with Next.js 14 App Router, Tailwind CSS, and Material UI icons adhering t
 
 ## Architecture
 
-```
-+--------------------------------------------------------------------------------+
-|                     SYNTHESIS NEXT.JS 14 COMMAND CENTER                        |
-|  Overview  |  PR Risk  |  Architecture Q&A  |  Debt Heatmap  |  Analytics      |
-+---------------------------------------+----------------------------------------+
-                                        | REST / JSON (Rewrites via Next.js)
-+---------------------------------------v----------------------------------------+
-|                            FASTAPI ASYNC GATEWAY                               |
-|   Tenant Scoping (X-Workspace-Id)  |  JWT Auth  |  GitHub Webhooks             |
-+---------------------------------------+----------------------------------------+
-                                        |
-+---------------------------------------v----------------------------------------+
-|                      LANGGRAPH 3-AGENT STATEGRAPH                              |
-|                                                                                |
-|  1. AST Diff Parser Node        -> Identifies altered signatures & types       |
-|  2. Blast Radius Evaluator Node -> Traverses import DAG for downstream files   |
-|  3. Technical Debt Scorer Node  -> Computes breaking change score (0-100)      |
-+-------------------+-----------------------------------+------------------------+
-                    |                                   |
-+-------------------v-------------------+       +-------v------------------------+
-|          FAISS VECTOR ENGINE          |       |   SUPABASE POSTGRESQL          |
-|  Sub-millisecond semantic code search |       |  SQLAlchemy 2.0 ORM            |
-|  Confidence-tiered citations (94%+)   |       |  Workspaces, PRs, code chunks  |
-+---------------------------------------+----------------------------------------+
+```mermaid
+flowchart TD
+    subgraph UI["Next.js 14 Command Center"]
+        direction LR
+        A1[Overview] --- A2[PR Risk]
+        A2 --- A3["Codebase Q&A"]
+        A3 --- A4[Debt Heatmap]
+        A4 --- A5[Analytics]
+        A5 --- A6[System Blueprint]
+    end
+
+    subgraph GW["FastAPI Async Gateway"]
+        B1["JWT Auth — HS256 30-day"]
+        B2["Workspace Scoping — X-Workspace-Id"]
+        B3["GitHub Webhooks"]
+    end
+
+    subgraph LG["LangGraph 3-Agent StateGraph"]
+        C1["AST Diff Parser
+Identifies altered signatures and types"]
+        C2["Blast Radius Evaluator
+Traverses import DAG for downstream files"]
+        C3["Technical Debt Scorer
+Computes breaking change score 0-100"]
+        C1 --> C2 --> C3
+    end
+
+    subgraph DATA["Data Layer"]
+        D1["FAISS Vector Engine
+Sub-ms semantic search — 94%+ relevance"]
+        D2["Supabase PostgreSQL
+Workspaces, PRs, code chunks
+Multi-tenant isolation"]
+    end
+
+    UI -->|"REST via Next.js rewrites"| GW
+    GW --> LG
+    LG --> D1
+    LG --> D2
+    GW --> D2
+
+    style UI fill:#0f2420,stroke:#10b981,color:#d1fae5
+    style GW fill:#0f1c2e,stroke:#3b82f6,color:#bfdbfe
+    style LG fill:#1a0f2e,stroke:#8b5cf6,color:#ede9fe
+    style DATA fill:#1a1200,stroke:#f59e0b,color:#fef3c7
 ```
 
 ---
