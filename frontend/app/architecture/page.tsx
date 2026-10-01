@@ -10,7 +10,7 @@ const mermaidChart = `
 graph TD
     classDef client fill:#0A1211,stroke:#10B981,stroke-width:1.5px,color:#F8FAFC;
     classDef gateway fill:#101B1A,stroke:#06B6D4,stroke-width:1.5px,color:#F8FAFC;
-    classDef graph fill:#132220,stroke:#8B5CF6,stroke-width:1.5px,color:#F8FAFC;
+    classDef agentNode fill:#132220,stroke:#8B5CF6,stroke-width:1.5px,color:#F8FAFC;
     classDef storage fill:#09100E,stroke:#F59E0B,stroke-width:1.5px,color:#F8FAFC;
 
     subgraph ClientLayer ["1. Next.js 14 Client Layer"]
@@ -27,9 +27,9 @@ graph TD
     end
 
     subgraph LangGraphLayer ["3. LangGraph 3-Agent StateGraph"]
-        ASTParser["Agent 1: AST Diff Parser<br/>(Extracts function signature mutations)"]:::graph
-        BlastRadius["Agent 2: Blast Radius Evaluator<br/>(Traverses import DAG & callers)"]:::graph
-        DebtScorer["Agent 3: Tech Debt Scorer<br/>(Computes 0-100 breaking score)"]:::graph
+        ASTParser["Agent 1: AST Diff Parser<br/>(Extracts function signature mutations)"]:::agentNode
+        BlastRadius["Agent 2: Blast Radius Evaluator<br/>(Traverses import DAG & callers)"]:::agentNode
+        DebtScorer["Agent 3: Tech Debt Scorer<br/>(Computes 0-100 breaking score)"]:::agentNode
     end
 
     subgraph StorageLayer ["4. Persistence & Vector Engine"]
@@ -44,13 +44,13 @@ graph TD
     Webhook --> API
 
     API --> Auth
-    Auth --> LangGraphLayer
+    Auth --> ASTParser
 
     ASTParser --> BlastRadius
     BlastRadius --> DebtScorer
 
-    LangGraphLayer --> FAISS
-    LangGraphLayer --> Postgres
+    DebtScorer --> FAISS
+    DebtScorer --> Postgres
 `;
 
 export default function ArchitecturePage() {
