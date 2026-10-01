@@ -638,7 +638,7 @@ def get_workspace_debt_heatmap(
         for c in chunks[:12]:
             loc = max(int(c.token_count * 1.8), 24)
             # deterministic risk score based on hash
-            raw_score = (int(c.content_hash[:4], 16) % 90) + 10.0 if len(c.content_hash) >= 4 else 45.0
+            raw_score = float((abs(hash(c.content_hash)) % 75) + 15)
             status = "critical" if raw_score >= 70 else "warning" if raw_score >= 40 else "stable"
             modules.append(
                 DebtHeatmapItem(
