@@ -13,7 +13,9 @@ def get_default_db_url() -> str:
         elif env_url.startswith("postgresql://") and not env_url.startswith("postgresql+psycopg://"):
             env_url = env_url.replace("postgresql://", "postgresql+psycopg://", 1)
         return env_url
-    return "postgresql+psycopg://user:REDACTED@host:5432/dbname"
+    raise RuntimeError(
+        "No database URL configured. Set the SYNTHESIS_DATABASE_URL or DATABASE_URL environment variable."
+    )
 
 
 class Settings(BaseSettings):
@@ -26,7 +28,7 @@ class Settings(BaseSettings):
     app_name: str = "Synthesis API"
     environment: str = "development"
     database_url: str = get_default_db_url()
-    jwt_secret: str = "REDACTED_JWT_SECRET"
+    jwt_secret: str  # Required — set via SYNTHESIS_JWT_SECRET env var
     jwt_algorithm: str = "HS256"
     token_expiry_minutes: int = 43200  # 30 days
     index_dir: str = "./data/indexes"
